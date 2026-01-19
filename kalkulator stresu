@@ -1,0 +1,414 @@
+#%%
+
+
+import numpy as np
+import pandas as pd
+
+from sklearn.model_selection import train_test_split, RepeatedStratifiedKFold, cross_validate, RandomizedSearchCV
+from sklearn.compose import ColumnTransformer, make_column_selector
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    balanced_accuracy_score, f1_score, roc_auc_score,
+    confusion_matrix, classification_report, make_scorer
+)
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.inspection import permutation_importance
+
+import joblib
+
+#%% md
+## 1) Konfiguracja
+#%%
+class Config:
+    excel_path: str = "prawidowy_excel.xlsx"
+    sheet_name: str | None = None
+
+    stress_high_threshold: float = 8.0
+    test_size: float = 0.35
+    random_state: int = 42
+
+cfg = Config()
+
+#%% md
+## 2) Funkcje pomocnicze + testy jednostkowe (czytelne, z liczbami)
+#%%
+import re
+
+def find_stress_column(df: pd.DataFrame) -> str:
+    cols_lower = {c: str(c).lower() for c in df.columns}
+    stress_candidates = [c for c in df.columns if "stres" in cols_lower[c]]
+    if not stress_candidates:
+        raise ValueError("Nie znalazłem kolumny stresu (musi zawierać 'stres').")
+
+    for c in stress_candidates:
+        cl = cols_lower[c]
+        if "poziom" in cl or "skali" in cl or "skala" in cl:
+            return c
+    return stress_candidates[0]
+
+def coerce_numeric_commas(series: pd.Series) -> pd.Series:
+    s = series.astype(str).str.replace(",", ".", regex=False).str.strip()
+    s = s.replace({"nan": np.nan, "None": np.nan, "none": np.nan, "": np.nan})
+    return pd.to_numeric(s, errors="coerce")
+
+def make_target_from_stress(stress_num: pd.Series, thr: float) -> pd.Series:
+    return pd.Series(np.where(stress_num >= thr, "HIGH", "NOT_HIGH"), index=stress_num.index)
+
+def make_preprocess():
+    num_sel = make_column_selector(dtype_include=np.number)
+    cat_sel = make_column_selector(dtype_exclude=np.number)
+
+    num_pipe = Pipeline(steps=[
+        ("imp", SimpleImputer(strategy="median")),
+    ])
+
+    cat_pipe = Pipeline(steps=[
+        ("imp", SimpleImputer(strategy="most_frequent")),
+        ("ohe", OneHotEncoder(handle_unknown="ignore")),
+    ])
+
+    return ColumnTransformer(
+        transformers=[("num", num_pipe, num_sel), ("cat", cat_pipe, cat_sel)],
+        remainder="drop"
+    )
+
+#testy
+def _test_find_stress_column_verbose():
+    print("TEST: find_stress_column\n" + "-"*35)
+    df0 = pd.DataFrame({"Poziom stresu (skala 1-10)": [1, 2], "wiek": [20, 21]})
+    res0 = find_stress_column(df0)
+    print("Kolumny:", list(df0.columns))
+    print("Wybrana:", res0)
+    assert res0 == "Poziom stresu (skala 1-10)"
+    print("OK\n")
+
+    df1 = pd.DataFrame({"stres": [1, 2], "x": [0, 1]})
+    res1 = find_stress_column(df1)
+    print("Kolumny:", list(df1.columns))
+    print("Wybrana:", res1)
+    assert res1 == "stres"
+    print("OK\n")
+
+    try:
+        find_stress_column(pd.DataFrame({"abc": [1]}))
+        raise AssertionError("Powinien być wyjątek, a nie był.")
+    except ValueError as e:
+        print("Oczekiwany wyjątek:", repr(e))
+        print("OK\n")
+
+def _test_coerce_numeric_commas_verbose():
+    print("TEST: coerce_numeric_commas\n" + "-"*35)
+    s = pd.Series(["1,5", "2", "abc", None, ""])
+    out = coerce_numeric_commas(s)
+    df_show = pd.DataFrame({"in": s, "out": out})
+    print(df_show)
+    assert np.isclose(out.iloc[0], 1.5)
+    assert np.isclose(out.iloc[1], 2.0)
+    assert np.isnan(out.iloc[2])
+    assert np.isnan(out.iloc[3])
+    assert np.isnan(out.iloc[4])
+    print("OK\n")
+
+def _test_make_target_from_stress_verbose():
+    print("TEST: make_target_from_stress\n" + "-"*35)
+    s = pd.Series([7.9, 8.0, 10.0])
+    y = make_target_from_stress(s, 8.0)
+    df_show = pd.DataFrame({"stress": s, "thr": 8.0, "class": y})
+    print(df_show)
+    assert list(y) == ["NOT_HIGH", "HIGH", "HIGH"]
+    print("OK\n")
+
+_test_find_stress_column_verbose()
+_test_coerce_numeric_commas_verbose()
+_test_make_target_from_stress_verbose()
+
+print("OK — testy funkcji pomocniczych przeszły.")
+
+#%% md
+## 3) Wczytanie i przygotowanie danych (X, y)
+#%%
+import os
+
+if not os.path.exists(cfg.excel_path):
+    raise FileNotFoundError(f"Nie widzę pliku: {cfg.excel_path}. Ustaw cfg.excel_path poprawnie.")
+
+raw = pd.read_excel(cfg.excel_path, sheet_name=cfg.sheet_name, engine="openpyxl")
+df = raw[list(raw.keys())[0]].copy() if isinstance(raw, dict) else raw.copy()
+df = df.dropna(how="all")
+
+stress_col = find_stress_column(df)
+stress_num = coerce_numeric_commas(df[stress_col])
+mask = stress_num.notna()
+
+df = df.loc[mask].copy()
+stress_num = stress_num.loc[mask].copy()
+
+y = make_target_from_stress(stress_num, cfg.stress_high_threshold)
+y.name = "stress_class"
+
+X = df.drop(columns=[stress_col], errors="ignore").copy()
+
+# Konwersja "liczb z przecinkami" w kolumnach tekstowych, jeśli >=70% to liczby
+for c in X.columns:
+    if X[c].dtype == "object":
+        maybe = coerce_numeric_commas(X[c])
+        if maybe.notna().mean() >= 0.70:
+            X[c] = maybe
+
+print("Dane X:", X.shape, " | y:", y.shape)
+print("Rozkład klas:\n", y.value_counts())
+print("Kolumna stresu:", stress_col)
+
+#%% md
+## 4) Podział train/test (holdout)
+#%%
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=cfg.test_size,
+    random_state=cfg.random_state,
+    stratify=y
+)
+
+print("Train:", X_train.shape, "Test:", X_test.shape)
+print("Train klasy:\n", y_train.value_counts())
+print("Test  klasy:\n", y_test.value_counts())
+
+#%% md
+## 5) Modele bazowe: Logistic Regression vs ExtraTrees (holdout)
+#%%
+f1_high_scorer = make_scorer(f1_score, pos_label="HIGH")
+
+pipe_lr = Pipeline(steps=[
+    ("preprocess", make_preprocess()),
+    ("model", LogisticRegression(max_iter=5000, class_weight="balanced", random_state=cfg.random_state))
+])
+
+pipe_etc = Pipeline(steps=[
+    ("preprocess", make_preprocess()),
+    ("model", ExtraTreesClassifier(
+        n_estimators=600,
+        random_state=cfg.random_state,
+        n_jobs=1,
+        class_weight="balanced",
+        min_samples_leaf=2
+    ))
+])
+
+def eval_holdout(pipe, name):
+    pipe.fit(X_train, y_train)
+    pred = pipe.predict(X_test)
+
+    ba = balanced_accuracy_score(y_test, pred)
+    f1h = f1_score(y_test, pred, pos_label="HIGH")
+    cm = confusion_matrix(y_test, pred, labels=["HIGH","NOT_HIGH"])
+
+    print(f"\n{name} — HOLDOUT")
+    print("BA:", round(float(ba), 4), " | F1(HIGH):", round(float(f1h), 4))
+    print("CM (rows=true [HIGH, NOT_HIGH], cols=pred [HIGH, NOT_HIGH]):\n", cm)
+    print(classification_report(y_test, pred))
+
+eval_holdout(pipe_lr, "LogisticRegression")
+eval_holdout(pipe_etc, "ExtraTreesClassifier")
+
+#%% md
+## 6) Stabilna ocena: RepeatedStratifiedKFold 5×5 (CV)
+#%%
+cv_rep = RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=cfg.random_state)
+
+scoring = {
+    "bal_acc": "balanced_accuracy",
+    "f1_high": f1_high_scorer,
+    "roc_auc": "roc_auc"
+}
+
+def cv_report(pipe, name):
+    out = cross_validate(pipe, X, y, cv=cv_rep, scoring=scoring, n_jobs=1, return_train_score=False)
+    ba = out["test_bal_acc"]; f1h = out["test_f1_high"]; roc = out["test_roc_auc"]
+    print(f"\n{name} (Repeated 5×5 CV)")
+    print(f"BA      : {ba.mean():.4f} ± {ba.std(ddof=1):.4f}")
+    print(f"F1(HIGH): {f1h.mean():.4f} ± {f1h.std(ddof=1):.4f}")
+    print(f"ROC-AUC : {roc.mean():.4f} ± {roc.std(ddof=1):.4f}")
+    return out
+
+out_lr = cv_report(pipe_lr, "LOGISTIC REGRESSION")
+out_etc = cv_report(pipe_etc, "ETC (wstępne parametry)")
+
+#%% md
+## 7) Strojenie hiperparametrów ETC (RandomizedSearchCV na Repeated CV)
+#%%
+param_dist = {
+    "model__n_estimators": [400, 800, 1200],
+    "model__max_depth": [None, 5, 8, 12, 16, 20],
+    "model__min_samples_split": [2, 5, 10, 20, 40],
+    "model__min_samples_leaf": [1, 2, 4, 8, 12, 20],
+    "model__max_features": ["sqrt", "log2", 0.3, 0.5, 0.8, None],
+    "model__bootstrap": [False, True],
+    "model__class_weight": [None, "balanced"],
+}
+
+search = RandomizedSearchCV(
+    estimator=pipe_etc,
+    param_distributions=param_dist,
+    n_iter=40,
+    scoring=scoring,
+    refit="f1_high",
+    cv=cv_rep,
+    n_jobs=1,
+    random_state=cfg.random_state,
+    verbose=1,
+    return_train_score=False
+)
+
+search.fit(X, y)
+
+best_pipe = search.best_estimator_
+
+print("\nNajlepszy wynik (CV) F1(HIGH):", round(float(search.best_score_), 4))
+print("Najlepsze parametry:")
+for k, v in search.best_params_.items():
+    print(" -", k, "=", v)
+
+# raport stabilności dla best_pipe
+out_best = cv_report(best_pipe, "BEST ETC")
+
+#%% md
+## 8) Wpływ zmiennych: permutation importance (na holdout)
+#%%
+best_pipe.fit(X_train, y_train)
+
+perm = permutation_importance(
+    best_pipe,
+    X_test, y_test,
+    scoring=f1_high_scorer,
+    n_repeats=100,
+    random_state=cfg.random_state,
+    n_jobs=1
+)
+
+feat_names = best_pipe.named_steps["preprocess"].get_feature_names_out()
+imp_perm = pd.DataFrame({
+    "feature": feat_names,
+    "importance_mean": perm.importances_mean,
+    "importance_std": perm.importances_std
+}).sort_values("importance_mean", ascending=False)
+
+display(imp_perm.head(20))
+
+#%% md
+## 9) Zapis modelu do użycia np. w Streamlit
+#%%
+import joblib
+joblib.dump(best_pipe, "results/best_model.joblib")
+
+#%%
+MODEL_PATH = "results/best_model.joblib"
+
+USE_THRESHOLD = True
+THRESHOLD = 0.40
+
+FEATURES = [
+    "ile_godzin_spisz_srednio_na_dob",
+    "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia",
+    "ile_ile_godzin_dziennie_poswiecasz_na_nauke",
+    "ile_dni_w_tygodniu_cwiczysz",
+    "jak_czesto_spozywasz_alkohol",
+    "jak_czesto_palisz_papierosy",
+    "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+]
+
+def ask_option(question: str, options: list[str]) -> tuple[int, str]:
+    legend = " ".join([f"[{i+1}={opt}]" for i, opt in enumerate(options)])
+    base_prompt = f"{question} {legend}: "
+    prompt = base_prompt
+    while True:
+        s = input(prompt).strip()
+        if s.isdigit():
+            k = int(s)
+            if 1 <= k <= len(options):
+                return k, options[k - 1]
+        prompt = f"BŁĄD!: WPISZ NUMER Z PODANYCH. Pytanie: {base_prompt}"
+
+def risk_level(p_high: float) -> str:
+    if p_high < 0.20:
+        return "niskie"
+    if p_high < 0.40:
+        return "umiarkowane"
+    if p_high < 0.60:
+        return "podwyższone"
+    return "wysokie"
+
+def main():
+    pipe = joblib.load(MODEL_PATH)
+    print("KALKULATOR: Predykcja wysokiego stresu (HIGH vs NOT_HIGH)\n")
+
+    sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
+    caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
+    study_opts = ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"]
+    exercise_opts = ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"]
+    alc_opts = ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"]
+    smoke_opts = ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"]
+    relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
+
+    SLEEP_MAP = {1: 4.5, 2: 5.5, 3: 7.5, 4: 8.5}
+    CAFFEINE_MAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
+    STUDY_MAP = {1: 0.5, 2: 1.5, 3: 3.5, 4: 5.0}
+    EXERCISE_MAP = {1: 0, 2: 1.5, 3: 3.5, 4: 5.5, 5: 7}
+    ALC_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
+    SMOKE_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
+    RELAX_MAP = {1: 0.0, 2: 1.5, 3: 4.0, 4: 6.0}
+
+    questions = [
+        ("ile_godzin_spisz_srednio_na_dob", "1/7 Ile godzin śpisz średnio na dobę?", sleep_opts, SLEEP_MAP),
+        ("ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia", "2/7 Ile kaw/ napojów energetycznych (250 ml) spożywasz w ciągu dnia?", caffeine_opts, CAFFEINE_MAP),
+        ("ile_ile_godzin_dziennie_poswiecasz_na_nauke", "3/7 Ile godzin dziennie poświęcasz na naukę?", study_opts, STUDY_MAP),
+        ("ile_dni_w_tygodniu_cwiczysz", "4/7 Ile dni w tygodniu ćwiczysz?", exercise_opts, EXERCISE_MAP),
+        ("jak_czesto_spozywasz_alkohol", "5/7 Jak często spożywasz alkohol?", alc_opts, ALC_MAP),
+        ("jak_czesto_palisz_papierosy", "6/7 Jak często palisz papierosy?", smoke_opts, SMOKE_MAP),
+        ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle".replace("ą", "a").replace("ł", "l"), "", [], {}),  # placeholder to keep code compact
+    ]
+    # poprawny ostatni rekord (bez kombinowania z polskimi znakami)
+    questions[-1] = (
+        "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+        "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących (np. kino, zakupy, spacery, restauracja, kręgle)?",
+        relax_opts,
+        RELAX_MAP,
+    )
+
+    x = {}
+    summary = []
+
+    for col, q, opts, mapper in questions:
+        k, label = ask_option(q, opts)
+        x[col] = mapper[k]
+        summary.append((q.split(" ", 1)[1], label))  # bez "1/7 "
+
+    df = pd.DataFrame([x], columns=FEATURES)
+
+    pred = pipe.predict(df)[0]
+    p_high = None
+
+    if hasattr(pipe, "predict_proba"):
+        proba = pipe.predict_proba(df)[0]
+        classes = list(pipe.classes_)
+        if "HIGH" in classes:
+            p_high = float(proba[classes.index("HIGH")])
+        if USE_THRESHOLD and p_high is not None:
+            pred = "HIGH" if p_high >= THRESHOLD else "NOT_HIGH"
+
+    print("\nTwoje odpowiedzi:")
+    for q, label in summary:
+        print(f"- {q}: {label}")
+
+    print(f"\nWynik: {pred}")
+    if p_high is not None:
+        print(f"Prawdopodobieństwo HIGH: {p_high:.3f}")
+        if USE_THRESHOLD:
+            print(f"Próg HIGH: {THRESHOLD:.2f}")
+        print(f"Ocena ryzyka HIGH: {risk_level(p_high)}")
+
+if __name__ == "__main__":
+    main()
