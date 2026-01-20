@@ -142,7 +142,7 @@ elif page == "O projekcie":
     Celem projektu jest stworzenie modelu predykcyjnego, który ocenia ryzyko **podwyższonego poziomu stresu**
     u studentów na podstawie ich nawyków i stylu życia.
 
-    ---
+  
 ### **Dane wejściowe**
 Dane dotyczyły m.in.:
 - ilości snu
