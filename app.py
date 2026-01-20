@@ -1,13 +1,5 @@
 import streamlit as st
 
-st.header("Czym jest stres?")
-st.write("""
-Stres to naturalna reakcja organizmu na wymagające sytuacje. Może mobilizować
-do działania, ale w nadmiarze prowadzi do przemęczenia, zaburzeń snu i problemów zdrowotnych.
-""")
-
-
-
 
 
 import streamlit as st
