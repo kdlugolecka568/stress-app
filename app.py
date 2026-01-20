@@ -37,8 +37,6 @@ if page == "Kalkulator":
     # 🔽🔽🔽  TU WKLEJASZ SWÓJ KALKULATOR  🔽🔽🔽
     # ---------------------------------------
 
-    # przykład loadera:
-    # pipe = joblib.load("best_model.joblib")
 
     # tu wklejasz cały kod z pytaniami i predykcją
     # ...
