@@ -1,8 +1,4 @@
 import streamlit as st
-
-
-
-import streamlit as st
 import pandas as pd
 import joblib
 
@@ -23,16 +19,10 @@ if page == "Kalkulator":
     st.title("Kalkulator stresu studenta ")
     st.write("Wypełnij pola poniżej, aby oszacować poziom stresu.")
     
-    # ---------------------------------------
-    # 🔽🔽🔽  TU WKLEJASZ SWÓJ KALKULATOR  🔽🔽🔽
-    # ---------------------------------------
-
-
-    # tu wklejasz cały kod z pytaniami i predykcją
-    # ...
+    
     
     # ---------------------------------------
-    # 🔼🔼🔼  TU WKLEJASZ SWÓJ KALKULATOR  🔼🔼🔼
+    #  KALKULATOR 
     # ---------------------------------------
 
 
