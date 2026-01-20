@@ -138,9 +138,6 @@ Po kilku dniach widać powtarzające się wzorce, np.:
 To podejście jest stosowane w psychologii klinicznej i znacząco poprawia regulację emocji.
 """)
 
-
-
-
 elif page == "O projekcie":
     st.title(" O projekcie")
 
