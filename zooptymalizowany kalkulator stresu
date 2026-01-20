@@ -548,21 +548,22 @@ FEATURES = [
 if __name__ == "__main__":
   main()
 
-'''
-  Funkcja główna, która uruchamia kalkulator do predykcji wysokiego stresu (HIGH vs NOT_HIGH).
-  Zawiera pytania dotyczące różnych aspektów życia, takich jak sen, kawa, nauka, ćwiczenia, alkohol, papierosy i relaks.
-  Na podstawie odpowiedzi użytkownika oblicza prawdopodobieństwo wystąpienia wysokiego stresu oraz ocenia ryzyko.
+#"""
+#    Funkcja główna, która uruchamia kalkulator do predykcji wysokiego stresu (HIGH vs NOT_HIGH).
+#    Zawiera pytania dotyczące różnych aspektów życia, takich jak sen, kawa, nauka, ćwiczenia, alkohol, papierosy i relaks.
+#    Na podstawie odpowiedzi użytkownika oblicza prawdopodobieństwo wystąpienia wysokiego stresu oraz ocenia ryzyko.
+#
+#    Funkcja wykonuje następujące kroki:
+#    1. Ładuje wytrenowany model za pomocą joblib (plik: "results/best_model.joblib").
+#    2. Zadaje użytkownikowi pytania dotyczące stylu życia.
+#    3. Mapuje odpowiedzi użytkownika na liczby, które są używane do predykcji.
+#    4. Na podstawie odpowiedzi oblicza wynik klasyfikacji: "HIGH" lub "NOT_HIGH".
+#   5. Oblicza prawdopodobieństwo wysokiego stresu (jeśli dostępne) i ocenia ryzyko.
+#
+#    Args:
+#        Brak.
+#
+#    Returns:
+#        None.
+#"""
 
-  Funkcja wykonuje następujące kroki:
-  1. Ładuje wytrenowany model za pomocą joblib (plik: "results/best_model.joblib").
-  2. Zadaje użytkownikowi pytania dotyczące stylu życia.
-  3. Mapuje odpowiedzi użytkownika na liczby, które są używane do predykcji.
-  4. Na podstawie odpowiedzi oblicza wynik klasyfikacji: "HIGH" lub "NOT_HIGH".
-  5. Oblicza prawdopodobieństwo wysokiego stresu (jeśli dostępne) i ocenia ryzyko.
-
-  Args:
-      Brak.
-
-  Returns:
-      None.
- '''
