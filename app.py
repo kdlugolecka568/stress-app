@@ -19,9 +19,99 @@ if page == "Kalkulator":
     st.title("Kalkulator stresu studenta")
     st.write("Wypełnij pola poniżej, aby oszacować poziom stresu.")
     
-    # ---------------------------------------
-    #  KALKULATOR 
-    # ---------------------------------------
+import streamlit as st
+import pandas as pd
+import joblib
+
+# ustawienia modelu
+MODEL_PATH = "results/best_model.joblib"
+USE_THRESHOLD = True
+THRESHOLD = 0.40
+
+FEATURES = [
+    "ile_godzin_spisz_srednio_na_dob",
+    "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia",
+    "ile_ile_godzin_dziennie_poswiecasz_na_nauke",
+    "ile_dni_w_tygodniu_cwiczysz",
+    "jak_czesto_spozywasz_alkohol",
+    "jak_czesto_palisz_papierosy",
+    "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+]
+
+def risk_level(p_high: float) -> str:
+    if p_high < 0.20:
+        return "niskie"
+    if p_high < 0.40:
+        return "umiarkowane"
+    if p_high < 0.60:
+        return "podwyższone"
+    return "wysokie"
+
+
+if page == "Kalkulator":
+
+    st.title("🧠 Kalkulator stresu studenta")
+
+    # ładowanie modelu
+    try:
+        pipe = joblib.load(MODEL_PATH)
+    except:
+        st.error("❌ Nie znaleziono modelu! Upewnij się, że plik best_model.joblib jest w folderze results/")
+        st.stop()
+
+    # opcje odpowiedzi
+    sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
+    caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
+    study_opts = ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"]
+    exercise_opts = ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"]
+    alc_opts = ["Nigdy", "Sporadycznie", "Kilka razy w miesiącu", "Regularnie"]
+    smoke_opts = ["Nigdy", "Sporadycznie", "Kilka razy w tygodniu", "Codziennie"]
+    relax_opts = ["0 razy", "1-2 razy", "3-5 razy", "6+ razy"]
+
+    # mapowania
+    SLEEP_MAP = {"Mniej niż 5": 4.5, "5-6": 5.5, "7-8": 7.5, "Więcej niż 8": 8.5}
+    CAFFEINE_MAP = {"0": 0, "1": 1, "2": 2, "3": 3, "4 lub więcej": 4}
+    STUDY_MAP = {"Mniej niż 1 godzinę": 0.5, "1-2 godziny": 1.5, "3-4 godziny": 3.5, "5 lub więcej": 5.0}
+    EXERCISE_MAP = {"0": 0, "1-2 dni": 1.5, "3-4 dni": 3.5, "5-6 dni": 5.5, "Codziennie": 7}
+    ALC_MAP = {"Nigdy": 1, "Sporadycznie": 2, "Kilka razy w miesiącu": 3, "Regularnie": 4}
+    SMOKE_MAP = {"Nigdy": 1, "Sporadycznie": 2, "Kilka razy w tygodniu": 3, "Codziennie": 4}
+    RELAX_MAP = {"0 razy": 0.0, "1-2 razy": 1.5, "3-5 razy": 4.0, "6+ razy": 6.0}
+
+    # interfejs użytkownika
+    st.subheader("Wprowadź informacje:")
+
+    x = {
+        "ile_godzin_spisz_srednio_na_dob": SLEEP_MAP[st.selectbox("Ile godzin śpisz średnio na dobę?", sleep_opts)],
+        "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia": CAFFEINE_MAP[st.selectbox("Ile kaw/energetyków dziennie?", caffeine_opts)],
+        "ile_ile_godzin_dziennie_poswiecasz_na_nauke": STUDY_MAP[st.selectbox("Ile godzin dziennie poświęcasz na naukę?", study_opts)],
+        "ile_dni_w_tygodniu_cwiczysz": EXERCISE_MAP[st.selectbox("Ile dni w tygodniu ćwiczysz?", exercise_opts)],
+        "jak_czesto_spozywasz_alkohol": ALC_MAP[st.selectbox("Jak często spożywasz alkohol?", alc_opts)],
+        "jak_czesto_palisz_papierosy": SMOKE_MAP[st.selectbox("Jak często palisz papierosy?", smoke_opts)],
+        "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle": RELAX_MAP[st.selectbox("Jak często bierzesz udział w aktywnościach odstresowujących?", relax_opts)],
+    }
+
+    df = pd.DataFrame([x], columns=FEATURES)
+
+    if st.button("Oblicz wynik"):
+        pred = pipe.predict(df)[0]
+        p_high = None
+
+        if hasattr(pipe, "predict_proba"):
+            proba = pipe.predict_proba(df)[0]
+            classes = list(pipe.classes_)
+            if "HIGH" in classes:
+                p_high = float(proba[classes.index("HIGH")])
+            if USE_THRESHOLD and p_high is not None:
+                pred = "HIGH" if p_high >= THRESHOLD else "NOT_HIGH"
+
+        st.subheader("📊 Wynik:")
+
+        st.write(f"**Klasyfikacja:** {pred}")
+
+        if p_high is not None:
+            st.write(f"**Prawdopodobieństwo HIGH:** {p_high:.2f}")
+            st.write(f"**Ocena ryzyka:** {risk_level(p_high)}")
+
     pass   # ← usuń, gdy wkleisz kalkulator
 
 elif page == "Jak obniżyć stres?":
