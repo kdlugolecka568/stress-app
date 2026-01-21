@@ -49,6 +49,7 @@ questions = [
 questions[-1] = (
         "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
         "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących (np. kino, zakupy, spacery, restauracja, kręgle)?",
+        relax_opts,
         RELAX_MAP,
     )
 
