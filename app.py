@@ -20,13 +20,9 @@ import pandas as pd
 import streamlit as st
 
 # Ścieżka do modelu
-MODEL_PATH = "best_model.joblib"
-
-# Próg stresu
-USE_THRESHOLD = True
-THRESHOLD = 0.40
-
-relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
+def main():
+    pipe = joblib.load(MODEL_PATH)
+    print("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)\n")
 
     sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
     caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
@@ -95,47 +91,6 @@ relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", 
 if __name__ == "__main__":
     main()
 
-
-
-
-# Funkcja główna w aplikacji Streamlit
-def main():
-    st.title("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)")
-
-    # Zbieranie odpowiedzi od użytkownika
-    answers = {}
-    for col, q, options, mapper in questions:
-        answer = st.selectbox(q, options)
-        answer_idx = options.index(answer) + 1  # Indeks odpowiedzi
-        answers[col] = mapper[answer_idx]
-
-    # Tworzenie DataFrame z odpowiedziami
-    df = pd.DataFrame([answers])
-
-    # Predykcja
-    pred = pipe.predict(df)[0]
-    p_high = None
-
-    if hasattr(pipe, "predict_proba"):
-        proba = pipe.predict_proba(df)[0]
-        classes = list(pipe.classes_)
-        if "WYSOKI" in classes:
-            p_high = float(proba[classes.index("WYSOKI")])
-
-    # Wyświetlanie wyników
-    st.write("Twoje odpowiedzi:")
-    for q, label in answers.items():
-        st.write(f"- {q.split(' ', 1)[1]}: {label}")  # Bez numeru pytania
-
-    st.write(f"\nWynik: {pred}")
-    if p_high is not None:
-        st.write(f"Prawdopodobieństwo WYSOKIEGO STRESU: {p_high:.3f}")
-        if USE_THRESHOLD:
-            st.write(f"Próg WYSOKIEGO STRESU: {THRESHOLD:.2f}")
-        st.write(f"Ocena ryzyka WYSOKIEGO STRESU: {risk_level(p_high)}")
-
-if __name__ == "__main__":
-    main()
 
 
 
