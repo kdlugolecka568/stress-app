@@ -21,7 +21,7 @@ import streamlit as st
 
 # Ścieżka do modelu
 def main():
-    pipe = joblib.load(MODEL_PATH)
+    pipe = joblib.load(best_model.joblib)
     print("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)\n")
 
     sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
