@@ -43,7 +43,7 @@ def risk_level(p_high: float) -> str:
 # ------------------
 
 if page == "Kalkulator":
-    st.title("🧠 Kalkulator stresu studenta")
+    st.title("Kalkulator stresu studenta")
     st.write("Wypełnij pola poniżej, aby oszacować poziom stresu.")
 
     # ładowanie modelu
@@ -74,13 +74,13 @@ if page == "Kalkulator":
     st.subheader("Wprowadź informacje:")
 
     x = {
-        "ile_godzin_spisz_srednio_na_dob": SLEEP_MAP[st.selectbox("Ile godzin śpisz na dobę?", sleep_opts)],
-        "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia": CAFFEINE_MAP[st.selectbox("Ile kaw/energetyków dziennie?", caffeine_opts)],
-        "ile_ile_godzin_dziennie_poswiecasz_na_nauke": STUDY_MAP[st.selectbox("Ile godzin dziennie na naukę?", study_opts)],
-        "ile_dni_w_tygodniu_cwiczysz": EXERCISE_MAP[st.selectbox("Ile dni ćwiczysz w tygodniu?", exercise_opts)],
+        "ile_godzin_spisz_srednio_na_dob": SLEEP_MAP[st.selectbox("Ile godzin śpisz średnio na dobę?", sleep_opts)],
+        "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia": CAFFEINE_MAP[st.selectbox("Ile kaw/energetyków energetycznych 250 ml spożywasz dziennie?", caffeine_opts)],
+        "ile_ile_godzin_dziennie_poswiecasz_na_nauke": STUDY_MAP[st.selectbox("Ile godzin dziennie poświęcasz na naukę?", study_opts)],
+        "ile_dni_w_tygodniu_cwiczysz": EXERCISE_MAP[st.selectbox("Ile dni w tygodniu ćwiczysz?", exercise_opts)],
         "jak_czesto_spozywasz_alkohol": ALC_MAP[st.selectbox("Jak często pijesz alkohol?", alc_opts)],
         "jak_czesto_palisz_papierosy": SMOKE_MAP[st.selectbox("Jak często palisz papierosy?", smoke_opts)],
-        "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle": RELAX_MAP[st.selectbox("Jak często robisz aktywności odstresowujące?", relax_opts)],
+        "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle": RELAX_MAP[st.selectbox("Jak często uczestniczysz w aktywnościach odstresowujących (np. kino, zakupy, specery, restauracje, kręgle)?", relax_opts)],
     }
 
     df = pd.DataFrame([x], columns=FEATURES)
@@ -97,7 +97,7 @@ if page == "Kalkulator":
             if USE_THRESHOLD and p_high is not None:
                 pred = "HIGH" if p_high >= THRESHOLD else "NOT_HIGH"
 
-        st.subheader("📊 Wynik:")
+        st.subheader("Wynik:")
         st.write(f"**Klasyfikacja:** {pred}")
 
         if p_high is not None:
