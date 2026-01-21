@@ -16,7 +16,7 @@ page = st.sidebar.radio(
 # ------------------
 
 def main():
-    pipe = joblib.load("/content/best_model.joblib")
+    pipe = joblib.load("best_model.joblib")
     print("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)\n")
 
     # Opcje odpowiedzi dla każdego pytania
