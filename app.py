@@ -15,7 +15,7 @@ page = st.sidebar.radio(
 # KONFIGURACJA MODELU
 # ------------------
 
-MODEL_PATH = "results/best_model.joblib"
+MODEL_PATH = "best_model.joblib"
 USE_THRESHOLD = True
 THRESHOLD = 0.40
 
