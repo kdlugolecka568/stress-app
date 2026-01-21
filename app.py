@@ -44,7 +44,7 @@ def risk_level(p_high: float) -> str:
 
 if page == "Kalkulator":
     st.title("Kalkulator stresu studenta")
-    st.write("Wypełnij pola poniżej, aby oszacować poziom stresu.")
+    
 
     # ładowanie modelu
     try:
