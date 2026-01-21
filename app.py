@@ -43,8 +43,15 @@ questions = [
     ("ile_dni_w_tygodniu_cwiczysz", "4/7 Ile dni w tygodniu ćwiczysz?", ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"], EXERCISE_MAP),
     ("jak_czesto_spozywasz_alkohol", "5/7 Jak często spożywasz alkohol?", ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"], ALC_MAP),
     ("jak_czesto_palisz_papierosy", "6/7 Jak często palisz papierosy?", ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"], SMOKE_MAP),
-    ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle", "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących?", ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"], RELAX_MAP)
-]
+    ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle".replace("ą", "a").replace("ł", "l"), "", [], {}),  # placeholder to keep code compact
+    ]
+    # poprawny ostatni rekord (bez kombinowania z polskimi znakami)
+    questions[-1] = (
+        "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+        "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących (np. kino, zakupy, spacery, restauracja, kręgle)?",
+        relax_opts,
+        RELAX_MAP,
+    )
 
 # Ładowanie modelu
 pipe = joblib.load(MODEL_PATH)
