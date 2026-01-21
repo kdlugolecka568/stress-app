@@ -26,6 +26,9 @@ MODEL_PATH = "best_model.joblib"
 USE_THRESHOLD = True
 THRESHOLD = 0.40
 
+relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
+
+
 # Definicja map opcji
 SLEEP_MAP = {1: 4.5, 2: 5.5, 3: 7.5, 4: 8.5}
 CAFFEINE_MAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
