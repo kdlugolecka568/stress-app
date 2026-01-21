@@ -1,8 +1,43 @@
+MODEL_PATH = "/content/best_model.joblib"
+
+USE_THRESHOLD = True
+THRESHOLD = 0.40
+
+FEATURES = [
+    "ile_godzin_spisz_srednio_na_dob",
+    "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia",
+    "ile_ile_godzin_dziennie_poswiecasz_na_nauke",
+    "ile_dni_w_tygodniu_cwiczysz",
+    "jak_czesto_spozywasz_alkohol",
+    "jak_czesto_palisz_papierosy",
+    "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+]
+
+def ask_option(question: str, options: list[str]) -> tuple[int, str]:
+    legend = " ".join([f"[{i+1}={opt}]" for i, opt in enumerate(options)])
+    base_prompt = f"{question} {legend}: "
+    prompt = base_prompt
+    while True:
+        s = input(prompt).strip()
+        if s.isdigit():
+            k = int(s)
+            if 1 <= k <= len(options):
+                return k, options[k - 1]
+        prompt = f"BŁĄD!: WPISZ NUMER Z PODANYCH. Pytanie: {base_prompt}"
+
+def risk_level(p_high: float) -> str:
+    if p_high < 0.20:
+        return "niskie"
+    if p_high < 0.40:
+        return "umiarkowane"
+    if p_high < 0.60:
+        return "podwyższone"
+    return "wysokie"
+
 def main():
-    pipe = joblib.load("/content/best_model.joblib")
+    pipe = joblib.load(MODEL_PATH)
     print("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)\n")
 
-    # Opcje odpowiedzi dla każdego pytania
     sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
     caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
     study_opts = ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"]
@@ -26,19 +61,26 @@ def main():
         ("ile_dni_w_tygodniu_cwiczysz", "4/7 Ile dni w tygodniu ćwiczysz?", exercise_opts, EXERCISE_MAP),
         ("jak_czesto_spozywasz_alkohol", "5/7 Jak często spożywasz alkohol?", alc_opts, ALC_MAP),
         ("jak_czesto_palisz_papierosy", "6/7 Jak często palisz papierosy?", smoke_opts, SMOKE_MAP),
-        ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle", "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących?", relax_opts, RELAX_MAP)
+        ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle".replace("ą", "a").replace("ł", "l"), "", [], {}),  # placeholder to keep code compact
     ]
+    # poprawny ostatni rekord (bez kombinowania z polskimi znakami)
+    questions[-1] = (
+        "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+        "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących (np. kino, zakupy, spacery, restauracja, kręgle)?",
+        relax_opts,
+        RELAX_MAP,
+    )
 
     x = {}
     summary = []
 
-    # Pytania do użytkownika
     for col, q, opts, mapper in questions:
         k, label = ask_option(q, opts)
         x[col] = mapper[k]
         summary.append((q.split(" ", 1)[1], label))  # bez "1/7 "
 
     df = pd.DataFrame([x], columns=FEATURES)
+
     pred = pipe.predict(df)[0]
     p_high = None
 
@@ -48,24 +90,23 @@ def main():
         if "HIGH" in classes:
             p_high = float(proba[classes.index("HIGH")])
         if USE_THRESHOLD and p_high is not None:
-            pred = "WYSOKI" if p_high >= THRESHOLD else "NIE_WYSOKI_STRES"
+            pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
 
-
-    # Wyświetlanie odpowiedzi użytkownika i wyników
     print("\nTwoje odpowiedzi:")
     for q, label in summary:
         print(f"- {q}: {label}")
-    
-        
+
     print(f"\nWynik: {pred}")
     if p_high is not None:
-        print(f"Prawdopodobieństwo WYSOKIEGO STRESU: {p_high:.3f}")
+        print(f"Prawdopodobieństwo WYSOKIEGO_STRESU: {p_high:.3f}")
         if USE_THRESHOLD:
-            print(f"Próg WYSOKIEGO STRESU: {THRESHOLD:.2f}")
-        print(f"Ocena ryzyka WYSOKIEGO STRESU: {risk_level(p_high)}")
+            print(f"Próg WYSOKIEGO_STRESU: {THRESHOLD:.2f}")
+        print(f"Ocena ryzyka WYSOKIEGO_STRESU: {risk_level(p_high)}")
 
 if __name__ == "__main__":
     main()
+
+
 # Legenda wyjaśniająca poziomy ryzyka
 print("\nLegenda wyjaśniająca poziomy ryzyka:")
 print(" - niskie: Prawdopodobieństwo stresu poniżej 20% (bardzo małe ryzyko).")
@@ -108,4 +149,4 @@ print(" - wysokie: Prawdopodobieństwo stresu powyżej 60% (bardzo wysokie ryzyk
 
 
 
-#"""
+#"""    
