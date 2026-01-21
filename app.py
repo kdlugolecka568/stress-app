@@ -15,19 +15,66 @@ page = st.sidebar.radio(
 # KONFIGURACJA MODELU
 # ------------------
 
-MODEL_PATH = "best_model.joblib"
-USE_THRESHOLD = True
-THRESHOLD = 0.40
+import joblib
+import pandas as pd
+import streamlit as st
+from sklearn.metrics import f1_score, classification_report, balanced_accuracy_score
+from sklearn.model_selection import train_test_split
 
-FEATURES = [
-    "ile_godzin_spisz_srednio_na_dob",
-    "ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia",
-    "ile_ile_godzin_dziennie_poswiecasz_na_nauke",
-    "ile_dni_w_tygodniu_cwiczysz",
-    "jak_czesto_spozywasz_alkohol",
-    "jak_czesto_palisz_papierosy",
-    "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
+# Wczytanie modelu
+pipe = joblib.load("best_model.joblib")
+
+# Definicja map opcji
+SLEEP_MAP = {1: 4.5, 2: 5.5, 3: 7.5, 4: 8.5}
+CAFFEINE_MAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
+STUDY_MAP = {1: 0.5, 2: 1.5, 3: 3.5, 4: 5.0}
+EXERCISE_MAP = {1: 0, 2: 1.5, 3: 3.5, 4: 5.5, 5: 7}
+ALC_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
+SMOKE_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
+RELAX_MAP = {1: 0.0, 2: 1.5, 3: 4.0, 4: 6.0}
+
+questions = [
+    ("ile_godzin_spisz_srednio_na_dob", "Ile godzin śpisz średnio na dobę?", ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"], SLEEP_MAP),
+    ("ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia", "Ile kaw/ napojów energetycznych (250 ml) spożywasz w ciągu dnia?", ["0", "1", "2", "3", "4 lub więcej"], CAFFEINE_MAP),
+    ("ile_ile_godzin_dziennie_poswiecasz_na_nauke", "Ile godzin dziennie poświęcasz na naukę?", ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"], STUDY_MAP),
+    ("ile_dni_w_tygodniu_cwiczysz", "Ile dni w tygodniu ćwiczysz?", ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"], EXERCISE_MAP),
+    ("jak_czesto_spozywasz_alkohol", "Jak często spożywasz alkohol?", ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"], ALC_MAP),
+    ("jak_czesto_palisz_papierosy", "Jak często palisz papierosy?", ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"], SMOKE_MAP),
+    ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle", "Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących?", ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"], RELAX_MAP)
 ]
+
+def main():
+    st.title("Kalkulator predykcji stresu")
+
+    # Zbieranie odpowiedzi od użytkownika
+    answers = {}
+    for col, q, options, mapper in questions:
+        answer = st.selectbox(q, options)
+        answer_idx = options.index(answer) + 1  # Indeks odpowiedzi
+        answers[col] = mapper[answer_idx]
+
+    # Tworzenie DataFrame z odpowiedziami
+    df = pd.DataFrame([answers])
+
+    # Predykcja
+    pred = pipe.predict(df)[0]
+    p_high = None
+
+    if hasattr(pipe, "predict_proba"):
+        proba = pipe.predict_proba(df)[0]
+        classes = list(pipe.classes_)
+        if "WYSOKI" in classes:
+            p_high = float(proba[classes.index("WYSOKI")])
+
+    # Wyświetlanie wyników
+    st.write("Twoje odpowiedzi:")
+    for q, label in answers.items():
+        st.write(f"- {q}: {label}")
+
+    st.write(f"\nWynik: {pred}")
+    if p_high is not None:
+        st.write(f"Prawdopodobieństwo WYSOKIEGO STRESU: {p_high:.3f}")
+        st.write(f"Ocena ryzyka WYSOKIEGO STRESU: {risk_level(p_high)}")
 
 def risk_level(p_high: float) -> str:
     if p_high < 0.20:
@@ -37,6 +84,9 @@ def risk_level(p_high: float) -> str:
     if p_high < 0.60:
         return "podwyższone"
     return "wysokie"
+
+if __name__ == "__main__":
+    main()
 
 
 # ------------------
