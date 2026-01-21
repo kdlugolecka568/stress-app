@@ -28,46 +28,75 @@ THRESHOLD = 0.40
 
 relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
 
+    sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
+    caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
+    study_opts = ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"]
+    exercise_opts = ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"]
+    alc_opts = ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"]
+    smoke_opts = ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"]
+    relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
 
-# Definicja map opcji
-SLEEP_MAP = {1: 4.5, 2: 5.5, 3: 7.5, 4: 8.5}
-CAFFEINE_MAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
-STUDY_MAP = {1: 0.5, 2: 1.5, 3: 3.5, 4: 5.0}
-EXERCISE_MAP = {1: 0, 2: 1.5, 3: 3.5, 4: 5.5, 5: 7}
-ALC_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
-SMOKE_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
-RELAX_MAP = {1: 0.0, 2: 1.5, 3: 4.0, 4: 6.0}
+    SLEEP_MAP = {1: 4.5, 2: 5.5, 3: 7.5, 4: 8.5}
+    CAFFEINE_MAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
+    STUDY_MAP = {1: 0.5, 2: 1.5, 3: 3.5, 4: 5.0}
+    EXERCISE_MAP = {1: 0, 2: 1.5, 3: 3.5, 4: 5.5, 5: 7}
+    ALC_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
+    SMOKE_MAP = {1: 1, 2: 2, 3: 3, 4: 4}
+    RELAX_MAP = {1: 0.0, 2: 1.5, 3: 4.0, 4: 6.0}
 
-# Pytania
-questions = [
-    ("ile_godzin_spisz_srednio_na_dob", "1/7 Ile godzin śpisz średnio na dobę?", ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"], SLEEP_MAP),
-    ("ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia", "2/7 Ile kaw/ napojów energetycznych (250 ml) spożywasz w ciągu dnia?", ["0", "1", "2", "3", "4 lub więcej"], CAFFEINE_MAP),
-    ("ile_ile_godzin_dziennie_poswiecasz_na_nauke", "3/7 Ile godzin dziennie poświęcasz na naukę?", ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"], STUDY_MAP),
-    ("ile_dni_w_tygodniu_cwiczysz", "4/7 Ile dni w tygodniu ćwiczysz?", ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"], EXERCISE_MAP),
-    ("jak_czesto_spozywasz_alkohol", "5/7 Jak często spożywasz alkohol?", ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"], ALC_MAP),
-    ("jak_czesto_palisz_papierosy", "6/7 Jak często palisz papierosy?", ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"], SMOKE_MAP),
-    ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle".replace("ą", "a").replace("ł", "l"), "", [], {}),  # placeholder to keep code compact
+    questions = [
+        ("ile_godzin_spisz_srednio_na_dob", "1/7 Ile godzin śpisz średnio na dobę?", sleep_opts, SLEEP_MAP),
+        ("ile_kaw_napojow_energetycznych_250_ml_spozywasz_w_ciagu_dnia", "2/7 Ile kaw/ napojów energetycznych (250 ml) spożywasz w ciągu dnia?", caffeine_opts, CAFFEINE_MAP),
+        ("ile_ile_godzin_dziennie_poswiecasz_na_nauke", "3/7 Ile godzin dziennie poświęcasz na naukę?", study_opts, STUDY_MAP),
+        ("ile_dni_w_tygodniu_cwiczysz", "4/7 Ile dni w tygodniu ćwiczysz?", exercise_opts, EXERCISE_MAP),
+        ("jak_czesto_spozywasz_alkohol", "5/7 Jak często spożywasz alkohol?", alc_opts, ALC_MAP),
+        ("jak_czesto_palisz_papierosy", "6/7 Jak często palisz papierosy?", smoke_opts, SMOKE_MAP),
+        ("ile_razy_w_miesiacu_uczestniczysz_w_aktywnościach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle".replace("ą", "a").replace("ł", "l"), "", [], {}),  # placeholder to keep code compact
     ]
     # poprawny ostatni rekord (bez kombinowania z polskimi znakami)
-questions[-1] = (
+    questions[-1] = (
         "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
         "7/7 Ile razy w miesiącu uczestniczysz w aktywnościach odstresowujących (np. kino, zakupy, spacery, restauracja, kręgle)?",
         relax_opts,
         RELAX_MAP,
     )
 
-# Ładowanie modelu
-pipe = joblib.load(MODEL_PATH)
+    x = {}
+    summary = []
 
-# Funkcja do wyświetlania poziomu ryzyka
-def risk_level(p_high: float) -> str:
-    if p_high < 0.20:
-        return "niskie"
-    if p_high < 0.40:
-        return "umiarkowane"
-    if p_high < 0.60:
-        return "podwyższone"
-    return "wysokie"
+    for col, q, opts, mapper in questions:
+        k, label = ask_option(q, opts)
+        x[col] = mapper[k]
+        if ' ' in q:
+            st.write(f"- {q.split(' ', 1)[1]}: {label}")
+        else:
+            st.write(f"- {q}: {label}")
+
+    df = pd.DataFrame([x], columns=FEATURES)
+
+    pred = pipe.predict(df)[0]
+    p_high = None
+
+    if hasattr(pipe, "predict_proba"):
+        proba = pipe.predict_proba(df)[0]
+        classes = list(pipe.classes_)
+        if "HIGH" in classes:
+            p_high = float(proba[classes.index("HIGH")])
+        if USE_THRESHOLD and p_high is not None:
+            pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
+
+    st.write(f"\nWynik: {pred}")
+    if p_high is not None:
+        st.write(f"Prawdopodobieństwo WYSOKIEGO_STRESU: {p_high:.3f}")
+        if USE_THRESHOLD:
+            st.write(f"Próg WYSOKIEGO_STRESU: {THRESHOLD:.2f}")
+        st.write(f"Ocena ryzyka WYSOKIEGO_STRESU: {risk_level(p_high)}")
+
+if __name__ == "__main__":
+    main()
+
+
+
 
 # Funkcja główna w aplikacji Streamlit
 def main():
