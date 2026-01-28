@@ -4,6 +4,11 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+# -------------------------------------------------
+# USTAWIENIA STRONY (MUSI BYĆ ZANIM COKOLWIEK st.*)
+# -------------------------------------------------
+st.set_page_config(page_title="Kalkulator stresu", layout="centered")
+
 # ------------------
 # SIDEBAR MENU
 # ------------------
@@ -35,6 +40,7 @@ def _load_pipe(path: str):
     return joblib.load(path)
 
 def ask_option(question: str, options: list[str]) -> tuple[int, str]:
+    # legenda była tu wcześniej wyświetlana; teraz nie pokazujemy jej w UI
     legend = " ".join([f"[{i+1}={opt}]" for i, opt in enumerate(options)])
 
     key = "opt_" + hashlib.md5(question.encode("utf-8")).hexdigest()
@@ -56,17 +62,15 @@ def risk_level(p_high: float) -> str:
     return "wysokie"
 
 def main():
-    st.set_page_config(page_title="Kalkulator stresu", layout="centered")
     st.title("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)")
 
-    pipe = None
     try:
         pipe = _load_pipe(MODEL_PATH)
         st.success(f"Model wczytany z: {MODEL_PATH}")
     except Exception as e:
         st.error(f"Nie udało się wczytać modelu z: {MODEL_PATH}")
         st.code(str(e))
-        st.info("Upewnij się, że plik istnieje na serwerze Streamlit w tej ścieżce albo zmień MODEL_PATH.")
+        st.info("Upewnij się, że plik istnieje obok app.py (w katalogu projektu) lub zmień MODEL_PATH.")
         st.stop()
 
     sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
@@ -129,7 +133,11 @@ def main():
         if USE_THRESHOLD and p_high is not None:
             pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
 
-    LABEL_MAP = {"HIGH": "WYSOKI", "NIE_WYSOKI": "NIE_WYSOKI", "NOT_HIGH": "NIE_WYSOKI"}
+    LABEL_MAP = {
+        "HIGH": "WYSOKI",
+        "NIE_WYSOKI": "NIE_WYSOKI",
+        "NOT_HIGH": "NIE_WYSOKI",
+    }
     pred_pl = LABEL_MAP.get(str(pred), str(pred))
 
     st.subheader("Wynik")
@@ -141,15 +149,21 @@ def main():
             st.write(f"**Założony próg WYSOKIEGO_STRESU:** {THRESHOLD:.2f}")
         st.write(f"**Ocena ryzyka WYSOKIEGO_STRESU:** {risk_level(p_high)}")
 
+    st.info(
+        "To narzędzie ma charakter informacyjny i pokazuje **predykcję modelu**, a nie diagnozę. "
+        "Jeśli stres utrzymuje się długo, wpływa na sen/naukę/codzienne funkcjonowanie lub masz pogorszone samopoczucie — "
+        "warto skonsultować się ze specjalistą (psycholog/psychoterapeuta/lekarz). "
+        "W sytuacji zagrożenia zdrowia lub życia dzwoń pod **112**."
+    )
+
     with st.expander("Legenda wyjaśniająca poziomy ryzyka"):
         st.write(" - niskie: Prawdopodobieństwo stresu poniżej 20% (bardzo małe ryzyko).")
         st.write(" - umiarkowane: Prawdopodobieństwo stresu między 20% a 40% (średnie ryzyko).")
         st.write(" - podwyższone: Prawdopodobieństwo stresu między 40% a 60% (wysokie ryzyko).")
         st.write(" - wysokie: Prawdopodobieństwo stresu powyżej 60% (bardzo wysokie ryzyko).")
 
-
 # ------------------
-# ROUTING STRON (TO BYŁO ZEPSUTE)
+# ROUTING STRON
 # ------------------
 if page == "Kalkulator":
     main()
@@ -160,14 +174,12 @@ elif page == "Jak obniżyć stres?":
     st.write("""
     Stres jest naturalną reakcją organizmu na wymagające sytuacje. Może mobilizować do działania,
     ale w nadmiarze utrudnia naukę, sen i koncentrację oraz prowadzi do przeciążenia.
-    Poniżej znajduje się kilka strategii potwierdzonych badaniami, które pomagają zmniejszać poziom stresu.
+    Poniżej kilka strategii, które często realnie pomagają.
     """)
 
     st.subheader("1. Popraw higienę snu")
     st.write("""
-    Sen ma ogromny wpływ na regulację emocji i funkcjonowanie układu nerwowego.
-    **Co możesz zrobić:**
-    - ustal stałe godziny snu i pobudki,
+    - stałe godziny snu i pobudki,
     - ogranicz ekrany minimum godzinę przed snem,
     - zmniejsz kofeinę po godz. 15–16,
     - zadbaj o chłodne, ciche i ciemne środowisko snu.
@@ -175,21 +187,21 @@ elif page == "Jak obniżyć stres?":
 
     st.subheader("2. Regularna aktywność fizyczna")
     st.write("""
-    **20–30 minut aktywności dziennie** może obniżać napięcie i poprawiać sen.
-    Nie musi to być siłownia — wystarczy spacer, rower, taniec lub joga.
+    **20–30 minut ruchu dziennie** może obniżać napięcie i poprawiać sen.
+    Wystarczy spacer, rower, taniec lub joga — nie musi to być siłownia.
     """)
 
     st.subheader("3. Organizacja czasu")
     st.write("""
-    Planowanie pomaga odzyskać poczucie kontroli:
     - plan tygodnia,
     - dzielenie dużych zadań na mniejsze,
-    - priorytetyzacja.
+    - priorytetyzacja (co jest „na już”, a co może poczekać).
     """)
 
     st.subheader("4. Uważna kofeina")
     st.write("""
-    Kofeina u części osób nasila niepokój i pogarsza sen. Obserwuj ilość i godzinę picia.
+    Kofeina u części osób nasila niepokój i pogarsza sen. Obserwuj ilość oraz godzinę picia.
+    Czasem 1 kawa mniej robi zauważalną różnicę.
     """)
 
     st.subheader("5. Kontakt z innymi")
@@ -199,7 +211,6 @@ elif page == "Jak obniżyć stres?":
 
     st.subheader("6. Techniki relaksacyjne")
     st.write("""
-    Najbardziej przebadane metody:
     - ćwiczenia oddechowe,
     - mindfulness,
     - stretching / joga.
@@ -208,11 +219,22 @@ elif page == "Jak obniżyć stres?":
 
     st.subheader("7. Monitorowanie stresorów")
     st.write("""
-    Zapisuj: kiedy pojawia się stres, co go wywołało i co pomogło. Po kilku dniach widać wzorce.
+    Zapisuj: kiedy pojawia się stres, co go wywołało i co pomogło. Po kilku dniach zwykle widać wzorce.
+    """)
+
+    st.subheader("Kiedy warto szukać pomocy specjalisty?")
+    st.write("""
+    Warto rozważyć konsultację, jeśli:
+    - stres utrzymuje się przez wiele tygodni i nie mija mimo odpoczynku,
+    - masz problemy ze snem większość nocy,
+    - pojawiają się napady lęku/paniki albo stałe napięcie,
+    - spada koncentracja i funkcjonowanie na studiach/pracy,
+    - pojawiają się myśli samobójcze lub autoagresywne (wtedy pilnie).
     """)
 
 elif page == "O projekcie":
     st.title("O projekcie")
+
     st.write("""
     Celem projektu jest stworzenie modelu predykcyjnego, który ocenia ryzyko **podwyższonego poziomu stresu**
     u studentów na podstawie ich nawyków i stylu życia.
@@ -232,3 +254,8 @@ elif page == "O projekcie":
     - część badań
     - przykład aplikacji ML
     """)
+
+    st.warning(
+        "Uwaga: wynik jest wyłącznie **predykcją statystyczną** na podstawie odpowiedzi użytkownika. "
+        "Nie zastępuje konsultacji ze specjalistą ani diagnozy."
+    )
