@@ -42,7 +42,6 @@ def _load_pipe(path: str):
 
 def ask_option(question: str, options: list[str]) -> tuple[int, str]:
     legend = " ".join([f"[{i+1}={opt}]" for i, opt in enumerate(options)])
-    # st.caption(legend)  # <-- usuń/zakomentuj, żeby nie wyświetlało legendy w [ ]
 
     key = "opt_" + hashlib.md5(question.encode("utf-8")).hexdigest()
     k = st.radio(
@@ -137,9 +136,9 @@ def main():
         if USE_THRESHOLD and p_high is not None:
             pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
 
-    st.subheader("Twoje odpowiedzi")
-    for q, label in summary:
-        st.write(f"- **{q}**: {label}")
+#    st.subheader("Twoje odpowiedzi")
+#    for q, label in summary:
+#        st.write(f"- **{q}**: {label}")
 
     st.subheader("Wynik")
     st.write(f"**Wynik:** {pred}")
