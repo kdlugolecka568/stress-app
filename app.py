@@ -132,9 +132,9 @@ def main():
         proba = pipe.predict_proba(df)[0]
         classes = list(pipe.classes_)
         if "HIGH" in classes:
-            p_high = float(proba[classes.index("HIGH")])
+            p_high = float(proba[classes.index("WYSOKI")])
         if USE_THRESHOLD and p_high is not None:
-            pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
+            pred = "WYSOKI" if p_high >= THRESHOLD else "NIE_WYSOKI"
 
     st.subheader("Twoje odpowiedzi")
     for q, label in summary:
@@ -146,7 +146,7 @@ def main():
     if p_high is not None:
         st.write(f"**Prawdopodobieństwo WYSOKIEGO_STRESU:** {p_high:.3f}")
         if USE_THRESHOLD:
-            st.write(f"**Próg WYSOKIEGO_STRESU:** {THRESHOLD:.2f}")
+            st.write(f"**Założony próg WYSOKIEGO_STRESU:** {THRESHOLD:.2f}")
         st.write(f"**Ocena ryzyka WYSOKIEGO_STRESU:** {risk_level(p_high)}")
 
     with st.expander("Legenda wyjaśniająca poziomy ryzyka"):
