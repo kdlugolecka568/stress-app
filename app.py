@@ -131,10 +131,10 @@ def main():
     if hasattr(pipe, "predict_proba"):
         proba = pipe.predict_proba(df)[0]
         classes = list(pipe.classes_)
-        if "WYSOKI" in classes:
-            p_high = float(proba[classes.index("WYSOKI")])
+        if "HIGH" in classes:
+            p_high = float(proba[classes.index("HIGH")])
         if USE_THRESHOLD and p_high is not None:
-            pred = "WYSOKI" if p_high >= THRESHOLD else "NIE_WYSOKI"
+            pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
 
     st.subheader("Twoje odpowiedzi")
     for q, label in summary:
