@@ -42,7 +42,7 @@ def _load_pipe(path: str):
 
 def ask_option(question: str, options: list[str]) -> tuple[int, str]:
     legend = " ".join([f"[{i+1}={opt}]" for i, opt in enumerate(options)])
-    st.caption(legend)
+    # st.caption(legend)  # <-- usuń/zakomentuj, żeby nie wyświetlało legendy w [ ]
 
     key = "opt_" + hashlib.md5(question.encode("utf-8")).hexdigest()
     k = st.radio(
@@ -52,6 +52,7 @@ def ask_option(question: str, options: list[str]) -> tuple[int, str]:
         key=key,
     )
     return int(k), options[int(k) - 1]
+
 
 def risk_level(p_high: float) -> str:
     if p_high < 0.20:
