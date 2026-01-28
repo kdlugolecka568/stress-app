@@ -135,13 +135,21 @@ def main():
             p_high = float(proba[classes.index("HIGH")])
         if USE_THRESHOLD and p_high is not None:
             pred = "HIGH" if p_high >= THRESHOLD else "NIE_WYSOKI"
+    LABEL_MAP = {
+        "HIGH": "WYSOKI",
+        "NIE_WYSOKI": "NIE_WYSOKI",
+        "NOT_HIGH": "NIE_WYSOKI",
+    }
 
+    pred_pl = LABEL_MAP.get(str(pred), str(pred))
+    
+    
 #    st.subheader("Twoje odpowiedzi")
 #    for q, label in summary:
 #        st.write(f"- **{q}**: {label}")
 
     st.subheader("Wynik")
-    st.write(f"**Wynik:** {pred}")
+    st.write(f"**Wynik:** {pred_pl}")
 
     if p_high is not None:
         st.write(f"**Prawdopodobieństwo WYSOKIEGO_STRESU:** {p_high:.3f}")
@@ -154,6 +162,8 @@ def main():
         st.write(" - umiarkowane: Prawdopodobieństwo stresu między 20% a 40% (średnie ryzyko).")
         st.write(" - podwyższone: Prawdopodobieństwo stresu między 40% a 60% (wysokie ryzyko).")
         st.write(" - wysokie: Prawdopodobieństwo stresu powyżej 60% (bardzo wysokie ryzyko).")
+
+
 
 if __name__ == "__main__":
     main()
