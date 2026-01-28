@@ -76,13 +76,13 @@ def main():
         st.info("Upewnij się, że plik istnieje na serwerze Streamlit w tej ścieżce albo zmień MODEL_PATH.")
         st.stop()
 
-    sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
-    caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
-    study_opts = ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"]
-    exercise_opts = ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"]
-    alc_opts = ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"]
-    smoke_opts = ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"]
-    relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
+    #sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
+    #caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
+    #study_opts = ["Mniej niż 1 godzinę", "1-2 godziny", "3-4 godziny", "5 lub więcej"]
+    #exercise_opts = ["0", "1-2 dni", "3-4 dni", "5-6 dni", "Codziennie"]
+    #alc_opts = ["Nigdy", "Sporadycznie (raz w miesiącu lub rzadziej)", "Kilka razy w miesiącu", "Regularnie (kilka razy w tygodniu)"]
+    #smoke_opts = ["Nigdy", "Sporadycznie (np. przy okazji imprezy)", "Kilka razy w tygodniu", "Codziennie"]
+    #relax_opts = ["W ogóle (0 razy w miesiącu)", "Rzadko (1-2 razy w miesiącu)", "Kilka razy w miesiącu (3-5 razy)", "Często (6 lub więcej razy w miesiącu)"]
 
     SLEEP_MAP = {1: 4.5, 2: 5.5, 3: 7.5, 4: 8.5}
     CAFFEINE_MAP = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
