@@ -10,4 +10,6 @@ Ostatecznie wybrano Extra Trees Classifier, który uzyskał lepsze wyniki dla kl
 
 Model nie stanowi diagnozy medycznej – jego celem jest wyłącznie informacyjna ocena ryzyka.
 
+W projekcie zastosowano narzędzie DVC (Data Version Control) do wersjonowania zbiorów danych ankietowych oraz wytrenowanego modelu uczenia maszynowego.
+
 Link do aplikacji: https://stress-app.streamlit.app/
