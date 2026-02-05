@@ -3,6 +3,7 @@ import hashlib
 import streamlit as st
 import pandas as pd
 import joblib
+from utils import risk_level
 
 # -------------------------------------------------
 # USTAWIENIA STRONY (MUSI BYĆ ZANIM COKOLWIEK st.*)
@@ -52,14 +53,6 @@ def ask_option(question: str, options: list[str]) -> tuple[int, str]:
     )
     return int(k), options[int(k) - 1]
 
-def risk_level(p_high: float) -> str:
-    if p_high < 0.20:
-        return "niskie"
-    if p_high < 0.40:
-        return "umiarkowane"
-    if p_high < 0.60:
-        return "podwyższone"
-    return "wysokie"
 
 def main():
     st.title("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)")
