@@ -1,4 +1,4 @@
-from utils import risk_level
+
 
 def test_risk_level_ranges():
     assert risk_level(0.1) == "niskie"
