@@ -1,7 +1,9 @@
 
-
-def test_risk_level_ranges():
-    assert risk_level(0.1) == "niskie"
-    assert risk_level(0.3) == "umiarkowane"
-    assert risk_level(0.5) == "podwyższone"
-    assert risk_level(0.8) == "wysokie"
+def risk_level(p_high: float) -> str:
+    if p_high < 0.20:
+        return "niskie"
+    if p_high < 0.40:
+        return "umiarkowane"
+    if p_high < 0.60:
+        return "podwyższone"
+    return "wysokie"
