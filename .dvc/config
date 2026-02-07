@@ -2,6 +2,6 @@
     remote = ssh-storage
 
 ['remote "ssh-storage"']
-    url = ssh://153.19.8.113/home/kdlugolecka568/stress_app_data
-    user = kdlugolecka568
+    url = ssh://153.19.8.113/home/kdlugolecka/stress_app_data
+    user = kdlugolecka
     port = 22
