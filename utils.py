@@ -7,3 +7,4 @@ def risk_level(p_high: float) -> str:
     if p_high < 0.60:
         return "podwyższone"
     return "wysokie"
+
