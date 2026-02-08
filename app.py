@@ -36,9 +36,9 @@ FEATURES = [
     "ile_razy_w_miesiacu_uczestniczysz_w_aktywnosciach_odstresowujacych_npkino_zakupy_spacery_restauracja_kregle",
 ]
 
-@st.cache_resource(show_spinner=False)
 def _load_pipe(path: str):
     return joblib.load(path)
+
 
 def ask_option(question: str, options: list[str]) -> tuple[int, str]:
     # legenda była tu wcześniej wyświetlana; teraz nie pokazujemy jej w UI
