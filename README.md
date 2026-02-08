@@ -1,6 +1,6 @@
 ## Opis projektu
 Projekt polega na stworzeniu modelu uczenia maszynowego prognozującego ryzyko wystąpienia wysokiego poziomu stresu na podstawie odpowiedzi z ankiety dotyczącej stylu życia. Model został udostępniony w formie interaktywnej aplikacji Streamlit, umożliwiającej użytkownikowi szybkie uzyskanie predykcji.
-Uwaga: model nie stanowi diagnozy medycznej — wynik ma charakter wyłącznie informacyjny.
+Uwaga: model nie stanowi diagnozy medycznej - wynik ma charakter wyłącznie informacyjny.
 
 
 ## Dane
@@ -16,7 +16,7 @@ Przetestowano dwa modele:
 - Logistic Regression
 - Extra Trees Classifier (model finalny)
 
-Model finalny: **Extra Trees Classifier** — wybrany ze względu na lepszy wynik dla klasy HIGH (klasa priorytetowa).
+Model finalny: **Extra Trees Classifier** - wybrany ze względu na lepszy wynik dla klasy HIGH (klasa priorytetowa).
 
 ### Preprocessing
 W projekcie zastosowano pipeline obejmujący:
@@ -33,7 +33,7 @@ Uczenie realizowane jest w pliku `train.py` z użyciem:
   (w kodzie: `scoring={"f1_high": ...}` oraz `refit="f1_high"`).
 
 
-## Wyniki (HOLDOUT — zbiór testowy)
+## Wyniki (HOLDOUT - zbiór testowy)
 
 ### Logistic Regression
 LogisticRegression — HOLDOUT
