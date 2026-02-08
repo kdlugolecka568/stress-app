@@ -47,9 +47,9 @@ LogisticRegression - HOLDOUT
               precision    recall  f1-score   support
 
         HIGH       0.80      0.67      0.73         6
-    NOT_HIGH       0.94      0.97      0.95        32
-
-    accuracy                           0.92        38
+      NOT_HIGH       0.94      0.97      0.95        32
+  
+      accuracy                           0.92        38
 
 
 
@@ -62,9 +62,9 @@ ExtraTreesClassifier - HOLDOUT
               precision    recall  f1-score   support
 
         HIGH       1.00      0.67      0.80         6
-    NOT_HIGH       0.94      1.00      0.97        32
+      NOT_HIGH       0.94      1.00      0.97        32
 
-    accuracy                           0.95        38
+      accuracy                           0.95        38
 
 ## Aplikacja (Streamlit)
 Plik `app.py` ładuje wytrenowany model z:
