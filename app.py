@@ -66,6 +66,10 @@ def main():
         st.code(str(e))
         st.info("Upewnij się, że plik istnieje obok app.py (w katalogu projektu) lub zmień MODEL_PATH.")
         st.stop()
+        
+import sys, sklearn
+st.write("PYTHON:", sys.version)
+st.write("SKLEARN:", sklearn.__version__)
 
     sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
     caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
