@@ -44,9 +44,9 @@ LogisticRegression - HOLDOUT
  [ 1 31]]
 
 
-              precision    recall  f1-score   support
+                 precision    recall  f1-score   support
 
-        HIGH       0.80      0.67      0.73         6
+          HIGH       0.80      0.67      0.73         6
       NOT_HIGH       0.94      0.97      0.95        32
   
       accuracy                           0.92        38
@@ -59,9 +59,9 @@ ExtraTreesClassifier - HOLDOUT
 - CM:
 [[ 4  2]
  [ 0 32]]
-              precision    recall  f1-score   support
 
-        HIGH       1.00      0.67      0.80         6
+                 precision    recall  f1-score   support
+          HIGH       1.00      0.67      0.80         6
       NOT_HIGH       0.94      1.00      0.97        32
 
       accuracy                           0.95        38
