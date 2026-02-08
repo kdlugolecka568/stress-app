@@ -53,7 +53,9 @@ def ask_option(question: str, options: list[str]) -> tuple[int, str]:
     )
     return int(k), options[int(k) - 1]
 
-
+import sys, sklearn
+st.write("PYTHON:", sys.version)
+st.write("SKLEARN:", sklearn.__version__)
 
 def main():
     st.title("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)")
@@ -67,9 +69,6 @@ def main():
         st.info("Upewnij się, że plik istnieje obok app.py (w katalogu projektu) lub zmień MODEL_PATH.")
         st.stop()
         
-import sys, sklearn
-st.write("PYTHON:", sys.version)
-st.write("SKLEARN:", sklearn.__version__)
 
     sleep_opts = ["Mniej niż 5", "5-6", "7-8", "Więcej niż 8"]
     caffeine_opts = ["0", "1", "2", "3", "4 lub więcej"]
