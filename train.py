@@ -349,7 +349,7 @@ search = RandomizedSearchCV(
 
 search.fit(X, y)
 best_pipe = search.best_estimator_
-joblib.dump(best_pipe, "results/best_model.joblib")
+joblib.dump(best_pipe, "best_model.joblib")
 
 '''
 search = RandomizedSearchCV(
@@ -397,8 +397,8 @@ best_pipe = search.best_estimator_
 
 
 '''
-joblib.dump(best_pipe, "results/best_model.joblib")
-  Zapisuje najlepszy model (best_pipe) do pliku 'results/best_model.joblib', aby można go było później załadować i używać.
+joblib.dump(best_pipe, "best_model.joblib")
+  Zapisuje najlepszy model (best_pipe) do pliku 'best_model.joblib', aby można go było później załadować i używać.
 
   Arguments:
       best_pipe (Pipeline): Najlepszy model, który zostanie zapisany.
