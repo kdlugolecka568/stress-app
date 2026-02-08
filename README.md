@@ -39,9 +39,9 @@ Uczenie realizowane jest w pliku `train.py` z użyciem:
 LogisticRegression - HOLDOUT
 - BA: 0.8177
 - F1(HIGH): 0.7273
-- CM:
-[[ 4  2]
- [ 1 31]]
+-      CM:
+           [[ 4  2]
+            [ 1 31]]
 
 
                  precision    recall  f1-score   support
@@ -56,9 +56,9 @@ LogisticRegression - HOLDOUT
 ExtraTreesClassifier - HOLDOUT
 - BA: 0.8333
 - F1(HIGH): 0.8000
-- CM:
-[[ 4  2]
- [ 0 32]]
+-     CM:
+           [[ 4  2]
+            [ 0 32]]
 
                  precision    recall  f1-score   support
           HIGH       1.00      0.67      0.80         6
