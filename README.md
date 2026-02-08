@@ -36,24 +36,27 @@ Uczenie realizowane jest w pliku `train.py` z użyciem:
 ## Wyniki (HOLDOUT - zbiór testowy)
 
 ### Logistic Regression
-LogisticRegression — HOLDOUT
-BA: 0.8177 | F1(HIGH): 0.7273
-CM:
+LogisticRegression - HOLDOUT
+- BA: 0.8177
+- F1(HIGH): 0.7273
+- CM:
 [[ 4  2]
  [ 1 31]]
+
+
               precision    recall  f1-score   support
 
         HIGH       0.80      0.67      0.73         6
     NOT_HIGH       0.94      0.97      0.95        32
 
     accuracy                           0.92        38
-   macro avg       0.87      0.82      0.84        38
-weighted avg       0.92      0.92      0.92        38
 
 
-ExtraTreesClassifier — HOLDOUT
-BA: 0.8333 | F1(HIGH): 0.8000
-CM:
+
+ExtraTreesClassifier - HOLDOUT
+- BA: 0.8333
+- F1(HIGH): 0.8000
+- CM:
 [[ 4  2]
  [ 0 32]]
               precision    recall  f1-score   support
@@ -62,9 +65,6 @@ CM:
     NOT_HIGH       0.94      1.00      0.97        32
 
     accuracy                           0.95        38
-   macro avg       0.97      0.83      0.88        38
-weighted avg       0.95      0.95      0.94        38
-
 
 ## Aplikacja (Streamlit)
 Plik `app.py` ładuje wytrenowany model z:
