@@ -53,10 +53,6 @@ def ask_option(question: str, options: list[str]) -> tuple[int, str]:
     )
     return int(k), options[int(k) - 1]
 
-import sys, sklearn
-st.write("PYTHON:", sys.version)
-st.write("SKLEARN:", sklearn.__version__)
-
 def main():
     st.title("KALKULATOR: Predykcja wysokiego stresu (WYSOKI vs NIE_WYSOKI)")
 
