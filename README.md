@@ -92,5 +92,26 @@ W projekcie wykorzystano DVC do wersjonowania danych i modelu. W repozytorium zn
 - `tests/` - testy jednostkowe
 - `requirements.txt` - zależności
 
+## Wdrożenie aplikacji (deployment)
+Aplikację wdrożono jako usługę webową w oparciu o Streamlit.
+
+Aby wdrożyć aplikację musiałyśmy:
+- umieścić projekt w repozytorium GitHub,
+- przygotować plik `requirements.txt` z zależnościami (Streamlit + biblioteki ML),
+- wskazać plik startowy aplikacji (`app.py`) jako entry point,
+- zadbać o dostęp aplikacji do wytrenowanego modelu (`best_model.joblib`), ponieważ aplikacja ładuje go przy uruchomieniu (`MODEL_PATH = "best_model.joblib"`).
+
+Dodatkowo musiałyśmy zadbać, aby aplikacja Streamlit poprawnie działała w przeglądarce oraz poprawnie wczytywała model w środowisku uruchomieniowym. W tym celu:
+- przeniosłyśmy kalkulator z wersji konsolowej (CLI, `input()`) do aplikacji webowej w Streamlit,
+- dodałyśmy `import streamlit as st`, aby możliwe było tworzenie interfejsu w przeglądarce i obsługa komponentów UI (formularze, wybór odpowiedzi, komunikaty),
+- ustawiłyśmy stałą ścieżkę `MODEL_PATH` wskazującą na plik modelu w katalogu projektu,
+- dodałyśmy bezpieczne wczytywanie modelu z obsługą błędów (komunikaty `st.success` / `st.error` informujące, czy model został poprawnie załadowany),
+- zastosowałyśmy cache zasobów (`@st.cache_resource`) dla wczytanego pipelinu, aby model nie był ładowany ponownie przy każdym odświeżeniu aplikacji,
+- skonfigurowałyśmy parametry strony (`st.set_page_config`) oraz elementy interfejsu (`st.sidebar`, `st.form`), aby aplikacja działała poprawnie w przeglądarce,
+- wykonałyśmy wczytanie modelu (`joblib.load`) i predykcję na podstawie danych z formularza.
+
+Po wdrożeniu aplikacja jest dostępna z poziomu przeglądarki i umożliwia wprowadzenie odpowiedzi użytkownika oraz otrzymanie predykcji (WYSOKI / NIE_WYSOKI) wraz z poziomem ryzyka.
+
+
 
 Link do aplikacji: https://stress-app.streamlit.app/
